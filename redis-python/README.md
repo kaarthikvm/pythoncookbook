@@ -15,3 +15,5 @@ Redis cli acts as client to Redis server
 Lua interpreter is used for Redis scripting
 
 Redis client if required can use AUTH for accessing Redis server
+
+Many subscriber & many publisher is possible
