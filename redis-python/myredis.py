@@ -61,7 +61,8 @@ def subscribe_cbmethod():
     # r.pubsub(ignore_subscribe_messages=True)
     r.publish('my-channel', 'Global Warming - world has to rise to stop')
     pubsubptr.get_message();
-
+    # threading for subscribe processing is available in ref link
+   
 if __name__ == '__main__':
     sample_redis()
     multi_exec();
