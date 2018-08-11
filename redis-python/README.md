@@ -17,3 +17,5 @@ Lua interpreter is used for Redis scripting
 Redis client if required can use AUTH for accessing Redis server
 
 Many subscriber & many publisher is possible
+
+Similar to mysqldump, redis can be taken backup (eg: dump.rdb). It can be restored
