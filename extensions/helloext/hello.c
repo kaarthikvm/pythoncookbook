@@ -74,6 +74,6 @@ static PyMethodDef helloext_API[] = {
    {NULL}
 };
 
-void inithelloext(void) {
+PyMODINIT_FUNC inithelloext(void) {
    Py_InitModule3("helloext", helloext_API,"Extension module example!");
 }
