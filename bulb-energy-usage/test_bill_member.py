@@ -6,6 +6,21 @@ from bill_member import calculate_bill
 
 class TestBillMember(unittest.TestCase):
 
+    def test_calculate_bill_for_march_2017(self):
+        amount, kwh = calculate_bill(member_id='member-123',
+                                     account_id='ALL',
+                                     bill_date='2017-03-31')
+        self.assertEqual(amount, 2107.27)
+        self.assertEqual(kwh, 17580)
+
+    
+    def test_calculate_bill_for_april_2017(self):
+        amount, kwh = calculate_bill(member_id='member-123',
+                                     account_id='ALL',
+                                     bill_date='2017-04-30')
+        self.assertEqual(amount, 25.81)
+        self.assertEqual(kwh, 179)
+
     def test_calculate_bill_for_august_2017(self):
         amount, kwh = calculate_bill(member_id='member-123',
                                      account_id='ALL',
@@ -13,13 +28,6 @@ class TestBillMember(unittest.TestCase):
         self.assertEqual(amount, 27.57)
         self.assertEqual(kwh, 167)
         pass
-     
-    def test_calculate_bill_for_april_2017(self):
-        amount, kwh = calculate_bill(member_id='member-123',
-                                     account_id='ALL',
-                                     bill_date='2017-04-30')
-        self.assertEqual(amount, 25.81)
-        self.assertEqual(kwh, 179)
 
     def test_calculate_bill_for_september_2017(self):
         amount, kwh = calculate_bill(member_id='member-123',
@@ -42,14 +50,17 @@ class TestBillMember(unittest.TestCase):
         self.assertEqual(amount, 50.01)
         self.assertEqual(kwh, 324)
  
-    def test_calculate_bill_for_march_2017(self):
-        amount, kwh = calculate_bill(member_id='member-123',
-                                     account_id='ALL',
-                                     bill_date='2017-03-31')
-        self.assertEqual(amount, 2107.27)
-        self.assertEqual(kwh, 17580)
-
-
+    # since calculate_bill API has to be modified to incorporate
+    # gas billing, following test case related to gas billing
+    # is tested locally and it is working as expected
+    # COMMENTED OUT below code for submission
+    #def test_calculate_gas_bill_for_april_2017(self):
+    #    amount, kwh = calculate_bill(member_id='member-123',
+    #                                 account_id='ALL',
+    #                                 bill_date='2017-04-30',
+    #                                 bill_type= 'gas')
+    #    self.assertEqual(amount, 11.22)
+    #    self.assertEqual(kwh, 179)
 
     
 if __name__ == '__main__':

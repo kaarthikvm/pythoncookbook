@@ -13,57 +13,76 @@ import tariff
 #############################################
 def debug_print( *args ):
     """ print details for debugging """
-    print("*********\n");
+    print("****************************\n");
     for info in args:
         print(info);
-        print("\n#########\n");
+        print("\n#######################\n");
 
 
 def fetch_meter_reading(member_id=None, account_id=None, m=None, y=None):
     """
-        Get the registered meter reading value for 
-        given month
+        Get the registered meter reading value (gas & electricity) for 
+        given month & year
     """
     json = get_readings();
-    member_electric_details = json[member_id][0]["account-abc"][0]["electricity"]; # TODO account id is hard coded
+    member_electric_details = json[member_id][0]["account-abc"][0]
+    member_usage_table = {"electricity":fetch_reading_bill_type("electricity", member_electric_details, m, y),
+                          "gas":fetch_reading_bill_type('gas', member_electric_details, m, y)};
+    debug_print( member_usage_table );
+    member_bill_table = {"electricity":tariff_calculation("electricity",
+                                                           member_usage_table["electricity"][0],
+                                                           member_usage_table["electricity"][1],
+                                                           member_usage_table["electricity"][2]),
+                          "gas":tariff_calculation("gas",
+                                                    member_usage_table["gas"][0],
+                                                    member_usage_table["gas"][1],
+                                                    member_usage_table["gas"][2])
+                         };
+    debug_print( member_bill_table );
+    return member_bill_table;
+
+def fetch_reading_bill_type(bill_type = None, member_electric_details = None, m=None, y=None):
+    """ fetch reading for electricity & gas """
+    details = member_electric_details[bill_type];
     prev_reading, curr_reading = 0, 0;
-    #prev_date, curr_date=dt(1,1,1,0,0,0);
+    prev_date, curr_date=dt(y,m,1), dt(y,m,1); # default value is current date and month request for billing
     
-    for i in range(len(member_electric_details)):
+    for i in range(len(details)):
         # extract month & year information from readings
         # check for match to given month and year.
         # fetch previous and current registered reading
         fmt = "%Y-%m-%dT%H:%M:%S.%fZ"; 
-        if ((dt.strptime(member_electric_details[i]["readingDate"],fmt).month == m) and
-            (dt.strptime(member_electric_details[i]["readingDate"],fmt).year == y)):
+        if ((dt.strptime(details[i]["readingDate"],fmt).month == m) and
+            (dt.strptime(details[i]["readingDate"],fmt).year == y)):
                # print("matched \n");  # debug point
-               curr_reading = member_electric_details[i]["cumulative"];
-               curr_date = dt.strptime(member_electric_details[i]["readingDate"],fmt);
+               curr_reading = details[i]["cumulative"];
+               curr_date = dt.strptime(details[i]["readingDate"],fmt);
                if i!=0:
-                   prev_reading = member_electric_details[i-1]["cumulative"];
-                   prev_date = dt.strptime(member_electric_details[i-1]["readingDate"],fmt);
+                   prev_reading = details[i-1]["cumulative"];
+                   prev_date = dt.strptime(details[i-1]["readingDate"],fmt);
                else: 
                    prev_date = dt(y,m,1); # it is assumed that for first paymnet of initial connection
                                           # day 1 of that month can be considered as start value
 
-    delta_days = curr_date - prev_date;
+    delta = curr_date - prev_date;
     debug_print("prev reading %d"%prev_reading,
                 "curr reading %d"%curr_reading,
                 "unit consumed %d"%(curr_reading - prev_reading),   
-                "delta days%s" %str(delta_days));
-    return prev_reading, curr_reading, delta_days;     
+                "delta days %s" %str(delta));
+    return [prev_reading, curr_reading, delta.days];     
 
 def tariff_calculation( bill_type=None, prev_reading=0, curr_reading=0, delta_days=0):
     """
-        fetch tariff information and calculate bill
+        calculate total cost consumer has to pay & no of units consumer
     """
     # calculate total charge for consumed units kWh
     total_unit_charge = tariff.BULB_TARIFF[bill_type]["unit_rate"] * (curr_reading - prev_reading);
     # calculate standing charge for used days
-    total_standing_charge = tariff.BULB_TARIFF[bill_type]["standing_charge"] * delta_days.days;
+    total_standing_charge = tariff.BULB_TARIFF[bill_type]["standing_charge"] * delta_days;
     debug_print("total unit charge (pence) %.2f" % total_unit_charge,
                 "total standing charge (pence) %.2f" % total_standing_charge);
-    return float("%.2f"%((total_unit_charge + total_standing_charge)/100)); 
+    return [float("%.2f"%((total_unit_charge + total_standing_charge)/100)), # total cost to pay
+            int(curr_reading - prev_reading)] # no of units consumed 
 
 def calculate_bill(member_id=None, account_id=None, bill_date=None):
     if (member_id == 'member-123' and
@@ -71,9 +90,19 @@ def calculate_bill(member_id=None, account_id=None, bill_date=None):
         bill_date != None): # assumption that bill date is mandatory to perform calculation
         debug_print("Calculation for bill date  %s" % str(bill_date));
         dtobj = dt.strptime(bill_date,"%Y-%m-%d");
-        p, c, d = fetch_meter_reading(member_id, account_id, dtobj.month, dtobj.year);   
-        amount = tariff_calculation("electricity", p, c, d);                                         
-        kwh = c-p;
+        bill = fetch_meter_reading(member_id, account_id, dtobj.month, dtobj.year);
+        if bill_type == "electricity":
+            amount = bill["electricity"][0];
+            kwh = bill["electricity"][1];
+        # below else part for Gas is tested locally and it is working as expected
+        # API "calculate_bill" has to be modified to incorporate billing for gas
+        # eg: calculate_bill(member_id=None, account_id=None, bill_date=None, bill_type='electricity') 
+        elif bill_type == "gas": 
+            amount = bill["gas"][0];
+            kwh = bill["gas"][1];
+        else:
+            amount =0.;
+            kwh=0 
     else:
         amount = 0.
         kwh = 0
