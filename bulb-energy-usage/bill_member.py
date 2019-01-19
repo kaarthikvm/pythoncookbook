@@ -85,29 +85,33 @@ def tariff_calculation( bill_type=None, prev_reading=0, curr_reading=0, delta_da
             int(curr_reading - prev_reading)] # no of units consumed 
 
 def calculate_bill(member_id=None, account_id=None, bill_date=None):
-    if (member_id == 'member-123' and
-        account_id == 'ALL' and
-        bill_date != None): # assumption that bill date is mandatory to perform calculation
-        debug_print("Calculation for bill date  %s" % str(bill_date));
-        dtobj = dt.strptime(bill_date,"%Y-%m-%d");
-        bill = fetch_meter_reading(member_id, account_id, dtobj.month, dtobj.year);
-        if bill_type == "electricity":
-            amount = bill["electricity"][0];
-            kwh = bill["electricity"][1];
-        # below else part for Gas is tested locally and it is working as expected
-        # API "calculate_bill" has to be modified to incorporate billing for gas
-        # eg: calculate_bill(member_id=None, account_id=None, bill_date=None, bill_type='electricity') 
-        elif bill_type == "gas": 
-            amount = bill["gas"][0];
-            kwh = bill["gas"][1];
-        else:
-            amount =0.;
-            kwh=0 
-    else:
-        amount = 0.
-        kwh = 0
-    return amount, kwh
 
+    amount=0.;
+    kwh=0;
+    bill_type = 'electricity'; # PLEASE NOTE THAT this has been hardcoded as of now.
+                               # BUT if we change API calculate_bill, this can be removed
+                               # explained in else part of code  
+    try:
+        if (
+            account_id == 'ALL' and
+            bill_date != None): # assumption that bill date is mandatory to perform calculation
+                debug_print("Calculation for bill date  %s ---- %s" % (member_id, str(bill_date)));
+                dtobj = dt.strptime(bill_date,"%Y-%m-%d");
+                bill = fetch_meter_reading(member_id, account_id, dtobj.month, dtobj.year);
+                if bill_type == "electricity":
+                    amount = bill["electricity"][0];
+                    kwh = bill["electricity"][1];
+                # below else part for Gas is tested locally and it is working as expected
+                # API "calculate_bill" has to be modified to incorporate billing for gas
+                # eg: calculate_bill(member_id=None, account_id=None, bill_date=None, bill_type='electricity') 
+                elif bill_type == "gas": 
+                    amount = bill["gas"][0];
+                    kwh = bill["gas"][1];
+    except KeyError as error:
+        print("Exception occured %s" % error);
+    except TypeError as error:
+        print("Exception occured %s" % error);
+    return amount, kwh
 def calculate_and_print_bill(member_id, account, bill_date):
     """Calculate the bill and then print it to screen.
     Account is an optional argument - I could bill for one account or many.
