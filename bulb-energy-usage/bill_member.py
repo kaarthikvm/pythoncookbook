@@ -43,7 +43,7 @@ def fetch_meter_reading(member_id=None, account_id=None, m=None, y=None):
 
 def fetch_reading_bill_type(bill_type = None, member_electric_details = None, m=None, y=None):
     """ fetch reading for electricity & gas """
-    details = member_electric_details[bill_type];
+    details = member_electric_details.get(bill_type, []);
     prev_reading, curr_reading = 0, 0;
     prev_date, curr_date=dt(y,m,1), dt(y,m,1); # default value is current date and month request for billing
     
@@ -92,7 +92,7 @@ def calculate_bill(member_id=None, account_id=None, bill_date=None):
                                # BUT if we change API calculate_bill, this can be removed
                                # explained in else part of code  
     try:
-        if (
+        if (member_id == "member-123" and
             account_id == 'ALL' and
             bill_date != None): # assumption that bill date is mandatory to perform calculation
                 debug_print("Calculation for bill date  %s ---- %s" % (member_id, str(bill_date)));
