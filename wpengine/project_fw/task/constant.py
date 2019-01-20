@@ -19,4 +19,5 @@ def debug_print (args):
         provided in python to filter logs like DEBUG, INFO, DETAIL etc
     """
     print args;
+    pass;
  
