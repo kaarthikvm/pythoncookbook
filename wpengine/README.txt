@@ -11,9 +11,7 @@ data/input.csv
 
 Code Execution Usage
 =====================
-1. Unzip/Untar soruce file
-2. Move to source directory after extraction
-3. Inside source directory issue the following command in shell
+1. Inside top level source directory give the  following command in shell
    
     python main.py data/input.csv <location of output file>
 
@@ -24,16 +22,25 @@ Code Execution Usage
 
 Test Execution
 ===============
-1. Unzip/Untar source file
-2. Move to source directory after extraction
-3. Set PYTHONPATH to locate modules 
+1. Inside top level source directory after extraction
+   Set PYTHONPATH to locate source modules 
    
    Eg: 
    export PYTHONPATH=$PWD
 
-3. change to "tests" directory
+2. change to "tests" directory
    Eg: cd tests 
-4. Run test using following command
+3. Run test using following command
    python test_task.py
 
+Software Distribution using setup.py
+====================================
+To create tar ball distribution,issue the following command
+from top level directory
+
+   python setup.py sdist
+ 
+
+After execution, tar ball for distribution can be located
+inside "dist" folder
 
