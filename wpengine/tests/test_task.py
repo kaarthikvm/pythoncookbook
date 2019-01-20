@@ -1,6 +1,8 @@
 import unittest
 import csv
+import requests
 from task.task import task_main as tm;
+from task.task import get_account_status as gas
 
 
 class TestSum(unittest.TestCase):
@@ -51,7 +53,17 @@ class TestSum(unittest.TestCase):
             self.assertEqual(0,cmp([ rdata['First Name'] for rdata in csv_rdr],
                                    [ wdata['First Name'] for wdata in csv_wr]));
  
-        
+
+    def test_failure_rest_api(self):
+        """
+            check rest api is not working 
+        """
+        try:
+            gas("123445");
+        except requests.exceptions.RequestException as e:
+            self.assertEqual(404,e.response.status_code);
+
+       
 
 if __name__ == '__main__':
     unittest.main()
