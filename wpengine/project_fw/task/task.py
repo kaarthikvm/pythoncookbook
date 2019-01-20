@@ -1,17 +1,10 @@
 #!/usr/bin/python
 import sys
 import csv
-import constant as c
 import requests
-from collections import OrderedDict
+import constant as c
 
-# global dictionary to hold final data to be written to output file
-OFDATA = OrderedDict([('Account ID', None),
-                     ('First Name', None),
-                     ('Created On', None),
-                     ('Status', None),
-                     ('Status Set', None)]);
- 
+
 def debug_print (args):
     """
         Debug function - to assist development
@@ -47,7 +40,7 @@ def process_csv (ifileName, ofileName):
         csv_rdr = csv.DictReader(rd_hdlr, delimiter=',');
         # init csv file for writing
         with open(ofileName, 'wb') as wr_hdlr:
-            csv_wr = csv.DictWriter(wr_hdlr, delimiter=',', fieldnames=OFDATA)
+            csv_wr = csv.DictWriter(wr_hdlr, delimiter=',', fieldnames=c.OFDATA)
             # write header in output file
             csv_wr.writeheader();
             for data in csv_rdr:
@@ -60,13 +53,13 @@ def write_data_csv(csv_wr, jsonresp, name):
     """
         Construct response to be written to output file
     """
-    OFDATA = {'Account ID': jsonresp['account_id'],
+    c.OFDATA = {'Account ID': jsonresp['account_id'],
               'First Name': name,
               'Created On': str(jsonresp['created_on']),
               'Status': str(jsonresp['status']),
               'Status Set': 'On' if str(jsonresp['status']) is not None else 'Off'};
-    DEBUG_PRINT("Output to csv file ==>  " + str(OFDATA));
-    csv_wr.writerow(OFDATA); 
+    DEBUG_PRINT("Output to csv file ==>  " + str(c.OFDATA));
+    csv_wr.writerow(c.OFDATA); 
    
     
 
