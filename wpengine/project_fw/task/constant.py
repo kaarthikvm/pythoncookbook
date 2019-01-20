@@ -1,3 +1,4 @@
+""" Global constants """
 #!/usr/bin/python
 
 COMMAND_LEN = 3
