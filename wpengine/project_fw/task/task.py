@@ -2,18 +2,10 @@
 import sys
 import csv
 import requests
-import constant as c
-
-
-def debug_print (args):
-    """
-        Debug function - to assist development
-        For production purpose, use logging framework
-        provided in python to filter logs like DEBUG, INFO, DETAIL etc
-    """
-    print args;
-DEBUG_PRINT = debug_print
-
+from constant import debug_print as DEBUG_PRINT
+from constant import URI as URI
+from constant import OFDATA as OFDATA
+from constant import COMMAND_LEN as COMMAND_LEN
 
 def get_account_status (account_id):
     """
@@ -21,8 +13,8 @@ def get_account_status (account_id):
        Call REST API
        Fetch API response
     """
-    DEBUG_PRINT("URL ==> " + c.URI + account_id);
-    resp = requests.get(c.URI + account_id);
+    DEBUG_PRINT("URL ==> " + URI + account_id);
+    resp = requests.get(URI + account_id);
     resp.raise_for_status(); # raises exception for other than 200 status code
     DEBUG_PRINT("URL API response ==> " + str(resp.json())); 
     return resp.json();
@@ -40,7 +32,7 @@ def process_csv (ifileName, ofileName):
         csv_rdr = csv.DictReader(rd_hdlr, delimiter=',');
         # init csv file for writing
         with open(ofileName, 'wb') as wr_hdlr:
-            csv_wr = csv.DictWriter(wr_hdlr, delimiter=',', fieldnames=c.OFDATA)
+            csv_wr = csv.DictWriter(wr_hdlr, delimiter=',', fieldnames=OFDATA)
             # write header in output file
             csv_wr.writeheader();
             for data in csv_rdr:
@@ -53,13 +45,13 @@ def write_data_csv(csv_wr, jsonresp, name):
     """
         Construct response to be written to output file
     """
-    c.OFDATA = {'Account ID': jsonresp['account_id'],
+    OFDATA = {'Account ID': jsonresp['account_id'],
               'First Name': name,
               'Created On': str(jsonresp['created_on']),
               'Status': str(jsonresp['status']),
               'Status Set': 'On' if str(jsonresp['status']) is not None else 'Off'};
-    DEBUG_PRINT("Output to csv file ==>  " + str(c.OFDATA));
-    csv_wr.writerow(c.OFDATA); 
+    DEBUG_PRINT("Output to csv file ==>  " + str(OFDATA));
+    csv_wr.writerow(OFDATA); 
    
     
 
@@ -79,7 +71,7 @@ def task_main (input_file, output_file):
 if __name__ == "__main__":
     DEBUG_PRINT("Length of arguments  %d" % (len(sys.argv)));
     DEBUG_PRINT("List of arguments    %s" % (str(sys.argv)));
-    if len(sys.argv) != c.COMMAND_LEN:
+    if len(sys.argv) != COMMAND_LEN:
         DEBUG_PRINT("Command Usage task.py <input file path> <output file path>");
         sys.exit(1);
     task_main(sys.argv[1], sys.argv[2]);

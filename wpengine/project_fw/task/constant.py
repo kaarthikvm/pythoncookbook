@@ -11,4 +11,12 @@ OFDATA = OrderedDict([('Account ID', None),
                      ('Created On', None),
                      ('Status', None),
                      ('Status Set', None)]);
+
+def debug_print (args):
+    """
+        Debug function - to assist development
+        For production purpose, use logging framework
+        provided in python to filter logs like DEBUG, INFO, DETAIL etc
+    """
+    print args;
  
