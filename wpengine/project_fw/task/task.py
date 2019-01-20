@@ -5,9 +5,6 @@ import constant as c
 import requests
 from collections import OrderedDict
 
-wr_hdlr= None;
-csv_wr= None;
-
 def debug_print ( args ):
     #print "#################################\n";
     print args;
@@ -21,40 +18,28 @@ def get_account_status ( account_id ):
     return resp.json();
 
 def process_csv ( ifileName, ofileName ):
-    ofnames = OrderedDict([('Account ID', None),
+    ofdata = OrderedDict([('Account ID', None),
                            ('First Name', None),
                            ('Created On', None),
                            ('Status', None),
                            ('Status Set', None)]);
  
     with open( ifileName, 'rb') as rd_hdlr:
-        csv_rdr = csv.DictReader(rd_hdlr);
+        csv_rdr = csv.DictReader(rd_hdlr, delimiter=',');
         # init csv file for writing
         with open(ofileName, 'wb') as wr_hdlr:
-            csv_wr = csv.DictWriter(wr_hdlr, delimiter=',', fieldnames=ofnames)
+            csv_wr = csv.DictWriter(wr_hdlr, delimiter=',', fieldnames=ofdata)
             csv_wr.writeheader();
             for data in csv_rdr:
                 debug_print("\nInput file content ==> " + str(data));
                 resp = get_account_status(data['Account ID']);
-                d= {'Account ID': resp['account_id'],
-                    'First Name': data['First Name'],
-                    'Created On': str(resp['created_on']),
-                    'Status': str(resp['status']),
-                    'Status Set': 'On'};# if resp['status'] != None};
-                debug_print("Output to csv file ==>  " + str(d));
-                csv_wr.writerow(d); 
-
-def csv_write_init ( ofileName):
-    ofnames = OrderedDict([('Account ID', None),
-                           ('First Name', None),
-                           ('Created On', None),
-                           ('Status', None),
-                           ('Status Set', None)]);
-    global wr_hdlr;
-    wr_hdlr = open( ofileName, 'wb');
-    global csv_wr;
-    csv_wr = csv.DictWriter(wr_hdlr, delimiter=',', fieldnames=ofnames)
-    csv_wr.writeheader();
+                ofdata = {'Account ID': resp['account_id'],
+                          'First Name': data['First Name'],
+                          'Created On': str(resp['created_on']),
+                          'Status': str(resp['status']),
+                          'Status Set': 'On'};# if resp['status'] != None};
+                debug_print("Output to csv file ==>  " + str(ofdata));
+                csv_wr.writerow(ofdata); 
 
 def main (input_file, output_file):
     try:
