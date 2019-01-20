@@ -63,7 +63,7 @@ def write_data_csv(csv_wr, jsonresp, name):
    
     
 
-def main (input_file, output_file):
+def task_main (input_file, output_file):
     """
         Entry point
     """
@@ -82,4 +82,4 @@ if __name__ == "__main__":
     if len(sys.argv) != c.COMMAND_LEN:
         DEBUG_PRINT("Command Usage task.py <input file path> <output file path>");
         sys.exit(1);
-    main(sys.argv[1], sys.argv[2]);
+    task_main(sys.argv[1], sys.argv[2]);
