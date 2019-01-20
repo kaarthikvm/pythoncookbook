@@ -7,5 +7,7 @@ setup(
     author_email = "",
     description = ("Python project for wpengine  evaluation"),
     license = "BSD",
-    packages=['task', 'tests'],
-)
+    packages=['task', 'tests','data'],
+    data_files=[('.',['data','main.py'])],
+    include_package_data=True
+    )
