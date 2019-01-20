@@ -5,7 +5,6 @@ import requests
 from constant import debug_print as DEBUG_PRINT
 from constant import URI as URI
 from constant import OFDATA as OFDATA
-from constant import COMMAND_LEN as COMMAND_LEN
 
 def get_account_status (account_id):
     """
@@ -67,11 +66,3 @@ def task_main (input_file, output_file):
         DEBUG_PRINT("I/O error({0}): {1}".format(e.errno, e.strerror));
     except BaseException as e:
         DEBUG_PRINT("Generic exception occured %s" % e);
-    
-if __name__ == "__main__":
-    DEBUG_PRINT("Length of arguments  %d" % (len(sys.argv)));
-    DEBUG_PRINT("List of arguments    %s" % (str(sys.argv)));
-    if len(sys.argv) != COMMAND_LEN:
-        DEBUG_PRINT("Command Usage task.py <input file path> <output file path>");
-        sys.exit(1);
-    task_main(sys.argv[1], sys.argv[2]);
