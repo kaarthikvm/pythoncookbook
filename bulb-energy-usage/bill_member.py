@@ -18,16 +18,21 @@ def debug_print( *args ):
         print(info);
         print("\n#######################\n");
 
+def fetch_member_details(member_id = None):
+    """
+        Get all information associated with member_id
+        like account-id, reading for gas and electricity
+    """
+    json = get_readings();
+    return json[member_id]
 
-def fetch_meter_reading(member_id=None, account_id=None, m=None, y=None):
+def fetch_meter_reading(account_id=None, m=None, y=None):
     """
         Get the registered meter reading value (gas & electricity) for 
         given month & year
     """
-    json = get_readings();
-    member_electric_details = json[member_id][0]["account-abc"][0]
-    member_usage_table = {"electricity":fetch_reading_bill_type("electricity", member_electric_details, m, y),
-                          "gas":fetch_reading_bill_type('gas', member_electric_details, m, y)};
+    member_usage_table = {"electricity":fetch_reading_bill_type("electricity", account_id, m, y),
+                          "gas":fetch_reading_bill_type('gas', account_id, m, y)};
     debug_print( member_usage_table );
     member_bill_table = {"electricity":tariff_calculation("electricity",
                                                            member_usage_table["electricity"][0],
@@ -84,31 +89,86 @@ def tariff_calculation( bill_type=None, prev_reading=0, curr_reading=0, delta_da
     return [float("%.2f"%((total_unit_charge + total_standing_charge)/100)), # total cost to pay
             int(curr_reading - prev_reading)] # no of units consumed 
 
-def calculate_bill(member_id=None, account_id=None, bill_date=None):
+def calculate_bill_no_of_account(mdetails=None, account_id=None, bill_type=None, m=None, y=None):
+    """
+       list of dictionary containing amount,kwh for all/single account id
+    """
+    il=[];
+    ol=[];
+    for acc in mdetails: # list of dictionary
+        for k,v in acc.items(): # fetch each account information
+            debug_print("  fetch reading for account name    %s" %k); 
+            il.append(fetch_individual_account_info(k, v[0], bill_type, m, y));
+    print(il);
+    ol = filter_based_on_account_id(il, account_id);
+    print(ol);
+    return ol; 
 
+
+def filter_based_on_account_id(ilist=[], account_id=None):
+    """
+       filter list based on account_id = ALL / single id
+    """
+    idetail = [];
+    if (account_id != 'ALL'):
+        # filter the list for particular account_id
+        for i in ilist:
+            if account_id == i["account_id"]:
+                idetail.append(i);
+                return idetail;
+    else:
+        return ilist;
+
+def fetch_individual_account_info(account_id=None, account_info=None, bill_type=None, m=None, y=None):
+    """
+        get individual account information from list of json
+        DISCLAIMER: Currently either gas/electricity is calculated.
+                    Once confirmed from BULB architect team on usage, BOTH gas
+                    and electricity combination has to be tweaked bit.
+    """ 
+    bill = fetch_meter_reading(account_info, m, y);
+    ind = dict();  # dictionary containing individual account info
+    ind["account_id"]=account_id;
+    ind["bill_type"]=bill_type;
+    if bill_type == "electricity":
+        ind["amount"]=bill["electricity"][0];
+        ind["kwh"]=bill["electricity"][1];
+    # below else part for Gas is tested locally and it is working as expected
+    # API "calculate_bill" has to be modified to incorporate billing for gas
+    # eg: calculate_bill(member_id=None, account_id=None, bill_date=None, bill_type='electricity') 
+    elif bill_type == "gas": 
+        ind["amount"]=bill["gas"][0];
+        ind["kwh"]=bill["gas"][1];
+    return ind;
+
+def calculate_bill(member_id=None, account_id=None, bill_date=None):
     amount=0.;
     kwh=0;
     bill_type = 'electricity'; # PLEASE NOTE THAT this has been hardcoded as of now.
                                # BUT if we change API calculate_bill, this can be removed
                                # explained in else part of code  
     try:
-        if (member_id == "member-123" and
-            account_id == 'ALL' and
-            bill_date != None): # assumption that bill date is mandatory to perform calculation
-                debug_print("Calculation for bill date  %s ---- %s" % (member_id, str(bill_date)));
-                dtobj = dt.strptime(bill_date,"%Y-%m-%d");
-                bill = fetch_meter_reading(member_id, account_id, dtobj.month, dtobj.year);
-                if bill_type == "electricity":
-                    amount = bill["electricity"][0];
-                    kwh = bill["electricity"][1];
-                # below else part for Gas is tested locally and it is working as expected
-                # API "calculate_bill" has to be modified to incorporate billing for gas
-                # eg: calculate_bill(member_id=None, account_id=None, bill_date=None, bill_type='electricity') 
-                elif bill_type == "gas": 
-                    amount = bill["gas"][0];
-                    kwh = bill["gas"][1];
+        debug_print("Calculation for bill date  %s ---- %s" % (member_id, str(bill_date)));
+        dtobj = dt.strptime(bill_date,"%Y-%m-%d");
+        mdetails = fetch_member_details(member_id);
+        debug_print(" Count - no of account registered %d" % len(mdetails));
+        amount_kwh_list = calculate_bill_no_of_account(mdetails, account_id, bill_type, dtobj.month, dtobj.year);
+        debug_print("List of amount & kwh details with account information == %s" %str(amount_kwh_list));
+        if amount_kwh_list is not None:
+            amount = amount_kwh_list[0]["amount"]; # Hard code. Please see DISCLAIMER below
+            kwh = amount_kwh_list[0]["kwh"]; # Hard coded. Please see DISCLAIMER below
+            #DISCLAIMER: Need to discuss with bulb architect team. 
+            #            As per "main.py", for given member_id,
+            #            "account_id" can be ALL or individual account
+            #            For all, list contains bill details of each
+            #            account. In that case, "calculate_and_print_bill API
+            #            has to be changed to accomodate this list.
+            #            Currently that API has been coded for single account_id
+            #            (returning single amount & kwh value)
+            #            Check with architect team whether sum of all has to be
+            #            given. Not sure how json reading/real use case looks like  
     except KeyError as error:
-        print("Exception occured %s" % error);
+        print("Non existence of Key - Exception occured %s" % error);
     except TypeError as error:
         print("Exception occured %s" % error);
     return amount, kwh

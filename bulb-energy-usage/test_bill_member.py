@@ -67,9 +67,25 @@ class TestBillMember(unittest.TestCase):
         self.assertEqual(amount, 0.0)
         self.assertEqual(kwh, 0)
         pass;
+   
+   # failure test case - invalid account id (account id is not present)
+    def test_invalid_account_id(self):
+        amount, kwh = calculate_bill(member_id='member-123',
+                                     account_id='invalidacc',
+                                     bill_date='2018-04-30')
+        self.assertEqual(amount, 0.0)
+        self.assertEqual(kwh, 0)
+        pass;
 
+    # failure test case - no member id present
+    def test_invalid_account_id(self):
+        amount, kwh = calculate_bill(member_id='member-999',
+                                     account_id='ALL',
+                                     bill_date='2018-04-30')
+        self.assertEqual(amount, 0.0)
+        self.assertEqual(kwh, 0)
+        pass;
 
- 
     # since calculate_bill API has to be modified to incorporate
     # gas billing, following test case related to gas billing
     # is tested locally and it is working as expected
@@ -82,6 +98,8 @@ class TestBillMember(unittest.TestCase):
     #    self.assertEqual(amount, 11.22)
     #    self.assertEqual(kwh, 179)
 
-    
+   
+    # tested for account_id (not given) and bill date(not given) from
+    # command line. Need to incorpoare test case
 if __name__ == '__main__':
     unittest.main()
