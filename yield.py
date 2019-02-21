@@ -34,3 +34,31 @@ m=d();
 t=m.process();
 print t;
 print next(next(t));
+
+print "====== multiple yields"
+def test():
+    yield 1
+    print "hello"
+    yield 2
+    print "world"
+    yield 3
+    yield 4
+
+print test();
+m=test();
+print next(m);
+print "sleeping for 1 sec" 
+print next(m);
+print "sleeping for 1 sec" 
+print next(m);
+print "sleeping for 1 sec" 
+print next(m);
+n=test()
+print list(n);
+
+## please note output carefully
+# in list only yield values are there
+#hello
+#world
+#[1, 2, 3, 4]
+
